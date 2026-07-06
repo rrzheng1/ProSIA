@@ -1,0 +1,2 @@
+ptm,accuracy_mean,precision_mean,recall_mean,f1_mean,mcc_mean,roc_auc_mean,pr_auc_mean
+2-Hydroxyisobutyrylation,0.815898,0.806778,0.832777,0.818615,0.633814,0.894105,0.883320

@@ -1,0 +1,2 @@
+ptm,accuracy_mean,precision_mean,recall_mean,f1_mean,mcc_mean,roc_auc_mean,pr_auc_mean
+Succinylation,0.788889,0.778493,0.809778,0.792222,0.580678,0.867917,0.850610

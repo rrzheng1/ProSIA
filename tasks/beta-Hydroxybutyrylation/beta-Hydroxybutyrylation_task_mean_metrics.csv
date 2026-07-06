@@ -1,0 +1,2 @@
+ptm,accuracy_mean,precision_mean,recall_mean,f1_mean,mcc_mean,roc_auc_mean,pr_auc_mean
+beta-Hydroxybutyrylation,0.821382,0.804648,0.850658,0.826297,0.645253,0.901177,0.887999

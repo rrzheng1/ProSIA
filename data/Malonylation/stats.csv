@@ -1,0 +1,17 @@
+split,rows,proteins,positive,negative
+raw_positive_k_sites,10154,3577,10154,0
+after_cdhit30_positive,5104,2135,5104,0
+after_cdhit30_pdb_exact_positive,2057,811,2057,0
+all_balanced,4114,811,2057,2057
+train_80,3366,648,1683,1683
+test_20,748,163,374,374
+fold_1_train,2698,518,1349,1349
+fold_1_val,668,130,334,334
+fold_2_train,2670,518,1335,1335
+fold_2_val,696,130,348,348
+fold_3_train,2778,518,1389,1389
+fold_3_val,588,130,294,294
+fold_4_train,2530,519,1265,1265
+fold_4_val,836,129,418,418
+fold_5_train,2788,519,1394,1394
+fold_5_val,578,129,289,289

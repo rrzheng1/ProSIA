@@ -1,0 +1,2 @@
+ptm,accuracy_mean,precision_mean,recall_mean,f1_mean,mcc_mean,roc_auc_mean,pr_auc_mean
+Ubiquitination,0.673276,0.670563,0.684948,0.676694,0.347674,0.738002,0.718425

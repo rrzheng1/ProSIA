@@ -1,0 +1,49 @@
+{
+  "variant": "mt_esm_prott5_gated_structure",
+  "architecture": {
+    "esm_branch": {
+      "window_size": 31,
+      "esm_dim": 1280,
+      "prompt_len": 500,
+      "cnn_channels": 200,
+      "kernel_sizes": [1, 9, 11],
+      "output_dim": 600
+    },
+    "prott5_branch": {
+      "window_size": 31,
+      "prott5_dim": 1024,
+      "encoder": "Linear + ReLU + Dropout + BiGRU + mean pooling",
+      "output_dim": 256,
+      "projected_dim": 600
+    },
+    "structure_branch": {
+      "window_size": 31,
+      "structure_dim": 112,
+      "encoder": "Linear + ReLU + Dropout + BiGRU + mean pooling",
+      "output_dim": 128,
+      "projected_dim": 600
+    },
+    "fusion": {
+      "esm_prott5": "sigmoid gate over [ESM_600, ProtT5_256]",
+      "structure": "sigmoid gate over [ESM_ProtT5_fused_600, Structure_128]"
+    },
+    "classifier": "task-specific binary linear head"
+  },
+  "training": {
+    "epochs": 30,
+    "patience": 6,
+    "batch_size": 8,
+    "lr": 0.0001,
+    "weight_decay": 0.0001,
+    "dropout": 0.5,
+    "num_folds": 5,
+    "seed": 0,
+    "amp": true
+  },
+  "paths": {
+    "data_dir": "/data/ranran/my_ptm/多位点/data",
+    "esm2_embedding": "/data/ranran/my_ptm/多位点/plm_embeddings/esm2_embedding",
+    "prott5_embedding": "/data/ranran/my_ptm/多位点/plm_embeddings/prott5_embedding",
+    "structure_embedding": "/data/ranran/my_ptm/多位点/structure/embedding"
+  }
+}
