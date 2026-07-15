@@ -1,0 +1,35 @@
+{
+  "dry_run": false,
+  "data_root": "data_new",
+  "output_dir": "global_split_output",
+  "seed": 42,
+  "test_fraction": 0.2,
+  "num_folds": 5,
+  "ptm_count": 10,
+  "ptms": [
+    "2-Hydroxyisobutyrylation",
+    "Acetylation",
+    "beta-Hydroxybutyrylation",
+    "Crotonylation",
+    "Glycation",
+    "Malonylation",
+    "Methylation",
+    "Succinylation",
+    "Sumoylation",
+    "Ubiquitination"
+  ],
+  "global_unique_proteins": 2811,
+  "global_train_proteins": 2249,
+  "global_test_proteins": 562,
+  "complete_candidate_negative_pool_detected": false,
+  "negative_sampling": "Existing negative rows from each source CSV were re-sampled within each new split; no complete candidate negative-site pool was detected.",
+  "embedding_summary": {
+    "proteins_checked": 2811,
+    "missing_esm2": 0,
+    "missing_prott5": 0,
+    "missing_structure": 0,
+    "structure_dim_not_112": 0,
+    "structure_shape_loaded": true
+  },
+  "audit_pass": true
+}

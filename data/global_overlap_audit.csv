@@ -1,0 +1,6 @@
+fold,global_train_unique,global_val_unique,global_test_unique,train_val_overlap,train_test_overlap,val_test_overlap
+1,1799,450,562,0,0,0
+2,1799,450,562,0,0,0
+3,1799,450,562,0,0,0
+4,1799,450,562,0,0,0
+5,1800,449,562,0,0,0

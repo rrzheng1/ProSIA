@@ -1,2 +1,2 @@
 ptm,accuracy_mean,precision_mean,recall_mean,f1_mean,mcc_mean,roc_auc_mean,pr_auc_mean
-Acetylation,0.709587,0.735141,0.665651,0.695147,0.424573,0.787316,0.780651
+Acetylation,0.689225,0.691381,0.684961,0.687513,0.379142,0.750861,0.734648

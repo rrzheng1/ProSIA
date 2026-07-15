@@ -30,10 +30,24 @@ from sklearn.metrics import (
 
 # Use project-local root (directory containing this script)
 ROOT = Path(__file__).resolve().parent
-DATA_DIR = ROOT / "data"
-ESM_DIR = ROOT / "plm_embeddings" / "esm2_embedding"
-PROTT5_DIR = ROOT / "plm_embeddings" / "prott5_embedding"
-STRUCTURE_DIR = ROOT / "structure" / "embedding"
+
+
+def first_existing_path(*candidates: Path) -> Path:
+    for path in candidates:
+        if path.exists():
+            return path
+    return candidates[0]
+
+
+DEFAULT_DATA_DIR = first_existing_path(ROOT / "data", ROOT.parent / "data")
+DEFAULT_ESM_DIR = first_existing_path(ROOT / "esm2_embedding", ROOT / "plm_embeddings" / "esm2_embedding", ROOT.parent / "plm_embeddings" / "esm2_embedding")
+DEFAULT_PROTT5_DIR = first_existing_path(ROOT / "prott5_embedding", ROOT / "plm_embeddings" / "prott5_embedding", ROOT.parent / "plm_embeddings" / "prott5_embedding")
+DEFAULT_STRUCTURE_DIR = first_existing_path(ROOT / "structure_embedding", ROOT / "structure" / "embedding", ROOT.parent / "structure" / "embedding")
+
+DATA_DIR = DEFAULT_DATA_DIR
+ESM_DIR = DEFAULT_ESM_DIR
+PROTT5_DIR = DEFAULT_PROTT5_DIR
+STRUCTURE_DIR = DEFAULT_STRUCTURE_DIR
 
 PTM_TYPES = sorted([p.name for p in DATA_DIR.iterdir() if p.is_dir() and (p / "train_80.csv").exists()])
 VARIANT = "mt_esm_prott5_gated_structure"
@@ -59,6 +73,7 @@ class Config:
     batch_size: int = 8
     lr: float = 1e-4
     weight_decay: float = 1e-4
+    log_every: int = 200
     seed: int = 0
     num_folds: int = 5
     device: str = "cuda"
@@ -73,12 +88,17 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--epochs", type=int, default=30)
     p.add_argument("--patience", type=int, default=6)
     p.add_argument("--batch-size", type=int, default=8)
+    p.add_argument("--log-every", type=int, default=200, help="Print training progress every N batches; <=0 disables batch logs.")
     p.add_argument("--prompt-len", type=int, default=500)
     p.add_argument("--num-folds", type=int, default=5)
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--weight-decay", type=float, default=1e-4)
     p.add_argument("--dropout", type=float, default=0.5)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
+    p.add_argument("--esm-dir", type=Path, default=DEFAULT_ESM_DIR)
+    p.add_argument("--prott5-dir", type=Path, default=DEFAULT_PROTT5_DIR)
+    p.add_argument("--structure-dir", type=Path, default=DEFAULT_STRUCTURE_DIR)
     p.add_argument("--device", default="cuda")
     p.add_argument("--out-root", default=str(ROOT / "experiment"))
     p.add_argument("--overwrite", action="store_true")
@@ -394,10 +414,11 @@ def evaluate(model, loader, criterion, device, amp):
     return float(np.sum(losses) / max(len(pred_df), 1)), pd.DataFrame(metric_rows), pred_df
 
 
-def train_epoch(model, loader, criterion, optimizer, scaler, device, amp):
+def train_epoch(model, loader, criterion, optimizer, scaler, device, amp, log_every: int = 0, epoch: int | None = None, fold: int | None = None):
     model.train()
     total, n = 0.0, 0
-    for raw in loader:
+    num_batches = len(loader)
+    for step, raw in enumerate(loader, start=1):
         batch = batch_to_device(raw, device)
         optimizer.zero_grad(set_to_none=True)
         with torch.amp.autocast("cuda", enabled=amp and device.type == "cuda"):
@@ -411,6 +432,17 @@ def train_epoch(model, loader, criterion, optimizer, scaler, device, amp):
             optimizer.step()
         total += float(loss.item()) * batch["y"].numel()
         n += batch["y"].numel()
+        if log_every and log_every > 0 and (step == 1 or step % log_every == 0 or step == num_batches):
+            prefix = []
+            if fold is not None:
+                prefix.append(f"fold {fold}")
+            if epoch is not None:
+                prefix.append(f"epoch {epoch}")
+            prefix.append(f"batch {step}/{num_batches}")
+            print(
+                f"{' '.join(prefix)} train_loss_running={total / max(n, 1):.5f}",
+                flush=True,
+            )
     return total / max(n, 1)
 
 
@@ -444,7 +476,7 @@ def train_fold(variant: str, fold: int, ptms: list[str], cfg: Config, variant_di
     best_state, best_score, best_epoch, stale = None, -math.inf, 0, 0
     history = []
     for epoch in range(1, cfg.epochs + 1):
-        train_loss = train_epoch(model, train_loader, criterion, optimizer, scaler, device, cfg.amp)
+        train_loss = train_epoch(model, train_loader, criterion, optimizer, scaler, device, cfg.amp, cfg.log_every, epoch, fold)
         val_loss, val_metrics, _ = evaluate(model, val_loader, criterion, device, cfg.amp)
         mean_mcc = float(pd.to_numeric(val_metrics["mcc"], errors="coerce").mean())
         mean_auc = float(pd.to_numeric(val_metrics["roc_auc"], errors="coerce").mean())
@@ -512,8 +544,26 @@ def write_artifacts(all_folds: pd.DataFrame, variant_dir: Path) -> pd.DataFrame:
 
 
 def main() -> None:
+    global DATA_DIR, ESM_DIR, PROTT5_DIR, STRUCTURE_DIR, PTM_TYPES
+
     args = parse_args()
     args.variants = [VARIANT]
+    DATA_DIR = args.data_dir.resolve()
+    ESM_DIR = args.esm_dir.resolve()
+    PROTT5_DIR = args.prott5_dir.resolve()
+    STRUCTURE_DIR = args.structure_dir.resolve()
+    for label, path in {
+        "data_dir": DATA_DIR,
+        "esm_dir": ESM_DIR,
+        "prott5_dir": PROTT5_DIR,
+        "structure_dir": STRUCTURE_DIR,
+    }.items():
+        if not path.exists():
+            raise FileNotFoundError(f"{label} does not exist: {path}")
+    PTM_TYPES = sorted([p.name for p in DATA_DIR.iterdir() if p.is_dir() and (p / "train_80.csv").exists()])
+    if not PTM_TYPES:
+        raise FileNotFoundError(f"No PTM task directories with train_80.csv found in {DATA_DIR}")
+
     cfg = Config(
         experiment_name=args.experiment_name,
         prompt_len=args.prompt_len,
@@ -535,6 +585,10 @@ def main() -> None:
     print(f"Using device: {device}", flush=True)
     if device.type == "cuda":
         print(f"GPU: {torch.cuda.get_device_name(0)}", flush=True)
+    print(f"Data dir: {DATA_DIR}", flush=True)
+    print(f"ESM2 dir: {ESM_DIR}", flush=True)
+    print(f"ProtT5 dir: {PROTT5_DIR}", flush=True)
+    print(f"Structure dir: {STRUCTURE_DIR}", flush=True)
 
     ptms = args.ptm or PTM_TYPES
     exp_root = Path(args.out_root) / args.experiment_name

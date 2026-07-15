@@ -1,0 +1,11 @@
+ptm,source,source_path,protein_col,label_col,position_col,rows,unique_proteins,positive,negative,has_existing_negative_pool,has_complete_candidate_negative_pool,negative_sampling_note
+2-Hydroxyisobutyrylation,all_balanced.csv,2-Hydroxyisobutyrylation\all_balanced.csv,protein,y,Position,10588,1441,5294,5294,True,False,Balanced from existing negative rows; no complete candidate negative-site pool was detected.
+Acetylation,all_balanced.csv,Acetylation\all_balanced.csv,protein,y,Position,15456,1037,7728,7728,True,False,Balanced from existing negative rows; no complete candidate negative-site pool was detected.
+beta-Hydroxybutyrylation,all_balanced.csv,beta-Hydroxybutyrylation\all_balanced.csv,protein,y,Position,3092,629,1546,1546,True,False,Balanced from existing negative rows; no complete candidate negative-site pool was detected.
+Crotonylation,all_balanced.csv,Crotonylation\all_balanced.csv,protein,y,Position,11704,1408,5852,5852,True,False,Balanced from existing negative rows; no complete candidate negative-site pool was detected.
+Glycation,all_balanced.csv,Glycation\all_balanced.csv,protein,y,Position,2162,626,1081,1081,True,False,Balanced from existing negative rows; no complete candidate negative-site pool was detected.
+Malonylation,all_balanced.csv,Malonylation\all_balanced.csv,protein,y,Position,4114,811,2057,2057,True,False,Balanced from existing negative rows; no complete candidate negative-site pool was detected.
+Methylation,all_balanced.csv,Methylation\all_balanced.csv,protein,y,Position,3284,912,1642,1642,True,False,Balanced from existing negative rows; no complete candidate negative-site pool was detected.
+Succinylation,all_balanced.csv,Succinylation\all_balanced.csv,protein,y,Position,2236,583,1118,1118,True,False,Balanced from existing negative rows; no complete candidate negative-site pool was detected.
+Sumoylation,all_balanced.csv,Sumoylation\all_balanced.csv,protein,y,Position,22984,1543,11492,11492,True,False,Balanced from existing negative rows; no complete candidate negative-site pool was detected.
+Ubiquitination,all_balanced.csv,Ubiquitination\all_balanced.csv,protein,y,Position,37550,1257,18775,18775,True,False,Balanced from existing negative rows; no complete candidate negative-site pool was detected.
