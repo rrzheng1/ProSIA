@@ -5,4 +5,8 @@
 env/
 .venv/
 *.pt
-experiment/
+figure/
+experiment/*
+!experiment/mt_esm_prott5_global_split/
+!experiment/mt_esm_prott5_global_split/**
+experiment/**/*.pt

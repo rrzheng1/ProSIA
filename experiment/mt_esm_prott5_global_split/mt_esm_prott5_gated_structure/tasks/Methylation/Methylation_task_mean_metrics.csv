@@ -1,0 +1,2 @@
+ptm,accuracy_mean,precision_mean,recall_mean,f1_mean,mcc_mean,roc_auc_mean,pr_auc_mean
+Methylation,0.703237,0.715006,0.688489,0.698091,0.410672,0.771919,0.782080

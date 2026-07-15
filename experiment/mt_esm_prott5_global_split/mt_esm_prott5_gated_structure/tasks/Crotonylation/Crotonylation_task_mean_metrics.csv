@@ -1,0 +1,2 @@
+ptm,accuracy_mean,precision_mean,recall_mean,f1_mean,mcc_mean,roc_auc_mean,pr_auc_mean
+Crotonylation,0.754760,0.754588,0.757205,0.754787,0.511078,0.835544,0.817303

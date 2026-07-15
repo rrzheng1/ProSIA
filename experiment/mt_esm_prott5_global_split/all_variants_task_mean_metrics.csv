@@ -1,0 +1,11 @@
+variant,ptm,accuracy_mean,precision_mean,recall_mean,f1_mean,mcc_mean,roc_auc_mean,pr_auc_mean
+mt_esm_prott5_gated_structure,2-Hydroxyisobutyrylation,0.769115,0.764923,0.778270,0.770967,0.539137,0.847274,0.831092
+mt_esm_prott5_gated_structure,Acetylation,0.689225,0.691381,0.684961,0.687513,0.379142,0.750861,0.734648
+mt_esm_prott5_gated_structure,Crotonylation,0.754760,0.754588,0.757205,0.754787,0.511078,0.835544,0.817303
+mt_esm_prott5_gated_structure,Glycation,0.614124,0.602523,0.681356,0.636967,0.232711,0.667311,0.663426
+mt_esm_prott5_gated_structure,Malonylation,0.722637,0.718149,0.736318,0.726071,0.446786,0.798105,0.777785
+mt_esm_prott5_gated_structure,Methylation,0.703237,0.715006,0.688489,0.698091,0.410672,0.771919,0.782080
+mt_esm_prott5_gated_structure,Succinylation,0.714925,0.717068,0.712438,0.713986,0.430811,0.803398,0.780232
+mt_esm_prott5_gated_structure,Sumoylation,0.701285,0.696195,0.718801,0.705709,0.405021,0.774419,0.762106
+mt_esm_prott5_gated_structure,Ubiquitination,0.660814,0.659318,0.667388,0.662737,0.322267,0.720086,0.697023
+mt_esm_prott5_gated_structure,beta-Hydroxybutyrylation,0.802527,0.787054,0.829603,0.807366,0.606661,0.880601,0.857170

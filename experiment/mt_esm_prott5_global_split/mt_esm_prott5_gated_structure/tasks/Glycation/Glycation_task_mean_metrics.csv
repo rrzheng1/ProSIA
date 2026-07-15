@@ -1,0 +1,2 @@
+ptm,accuracy_mean,precision_mean,recall_mean,f1_mean,mcc_mean,roc_auc_mean,pr_auc_mean
+Glycation,0.614124,0.602523,0.681356,0.636967,0.232711,0.667311,0.663426

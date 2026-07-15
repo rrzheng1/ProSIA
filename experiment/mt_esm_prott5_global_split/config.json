@@ -1,0 +1,50 @@
+{
+  "config": {
+    "amp": true,
+    "batch_size": 16,
+    "cnn_channels": 200,
+    "device": "cuda",
+    "dropout": 0.5,
+    "epochs": 30,
+    "esm_dim": 1280,
+    "experiment_name": "mt_esm_prott5_global_split",
+    "kernel_sizes": [
+      1,
+      9,
+      11
+    ],
+    "log_every": 200,
+    "lr": 0.0001,
+    "num_folds": 5,
+    "patience": 6,
+    "prompt_len": 500,
+    "prott5_dim": 1024,
+    "prott5_out": 256,
+    "seed": 0,
+    "structure_dim": 112,
+    "structure_out": 128,
+    "weight_decay": 0.0001,
+    "window_size": 31
+  },
+  "data_dir": "E:\\多位点\\ProSIA\\data",
+  "embedding_dirs": {
+    "esm2": "E:\\多位点\\ProSIA\\esm2_embedding",
+    "prott5": "E:\\多位点\\ProSIA\\prott5_embedding",
+    "structure": "E:\\多位点\\ProSIA\\structure_embedding"
+  },
+  "ptm_types": [
+    "2-Hydroxyisobutyrylation",
+    "Acetylation",
+    "Crotonylation",
+    "Glycation",
+    "Malonylation",
+    "Methylation",
+    "Succinylation",
+    "Sumoylation",
+    "Ubiquitination",
+    "beta-Hydroxybutyrylation"
+  ],
+  "variants": [
+    "mt_esm_prott5_gated_structure"
+  ]
+}

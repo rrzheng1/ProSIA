@@ -1,0 +1,2 @@
+ptm,accuracy_mean,precision_mean,recall_mean,f1_mean,mcc_mean,roc_auc_mean,pr_auc_mean
+Malonylation,0.722637,0.718149,0.736318,0.726071,0.446786,0.798105,0.777785
