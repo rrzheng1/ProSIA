@@ -8,7 +8,7 @@ import json
 import math
 import random
 import shutil
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from functools import lru_cache
 from pathlib import Path
 
@@ -59,7 +59,6 @@ METRIC_COLUMNS = ["accuracy", "precision", "recall", "f1", "mcc", "roc_auc", "pr
 class Config:
     experiment_name: str = "mt_esm_prott5_custom"
     window_size: int = 31
-    prompt_len: int = 500
     esm_dim: int = 1280
     prott5_dim: int = 1024
     structure_dim: int = 112
@@ -70,7 +69,7 @@ class Config:
     dropout: float = 0.5
     epochs: int = 30
     patience: int = 6
-    batch_size: int = 8
+    batch_size: int = 16
     lr: float = 1e-4
     weight_decay: float = 1e-4
     log_every: int = 200
@@ -80,6 +79,24 @@ class Config:
     amp: bool = True
 
 
+def config_from_dict(raw: dict) -> Config:
+    """Load supported fields from a saved configuration."""
+    valid = {field.name for field in fields(Config)}
+    return Config(**{key: value for key, value in raw.items() if key in valid})
+
+
+def load_compatible_state_dict(model: nn.Module, state_dict: dict[str, torch.Tensor]) -> None:
+    """Load weights saved by the current or an earlier implementation."""
+    model_keys = set(model.state_dict())
+    cleaned = {key: value for key, value in state_dict.items() if key in model_keys}
+    incompatible = model.load_state_dict(cleaned, strict=False)
+    if incompatible.missing_keys or incompatible.unexpected_keys:
+        raise RuntimeError(
+            "Incompatible checkpoint: "
+            f"missing={incompatible.missing_keys}, unexpected={incompatible.unexpected_keys}"
+        )
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Standalone ESM-ProtT5 gated-structure lysine PTM model.")
     p.add_argument("--experiment-name", default="mt_esm_prott5_custom")
@@ -87,9 +104,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--ptm", nargs="+", default=None)
     p.add_argument("--epochs", type=int, default=30)
     p.add_argument("--patience", type=int, default=6)
-    p.add_argument("--batch-size", type=int, default=8)
+    p.add_argument("--batch-size", type=int, default=16)
     p.add_argument("--log-every", type=int, default=200, help="Print training progress every N batches; <=0 disables batch logs.")
-    p.add_argument("--prompt-len", type=int, default=500)
     p.add_argument("--num-folds", type=int, default=5)
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--weight-decay", type=float, default=1e-4)
@@ -224,16 +240,13 @@ class MultiScaleESMBackbone(nn.Module):
     """
     Core branch:
       ESM2 window [B, 31, 1280]
-      learned task prompt [B, 500, 1280]
-      concat -> [B, 531, 1280]
       CNN(k=1,9,11) -> CNN(k=1,9,11)
       take center lysine representation -> [B, 600]
     """
 
-    def __init__(self, cfg: Config, n_tasks: int):
+    def __init__(self, cfg: Config):
         super().__init__()
         self.cfg = cfg
-        self.prompts = nn.Parameter(torch.randn(n_tasks, cfg.prompt_len, cfg.esm_dim) * 0.02)
         self.conv1 = nn.ModuleList(
             [nn.Conv1d(cfg.esm_dim, cfg.cnn_channels, k, padding="same") for k in cfg.kernel_sizes]
         )
@@ -246,12 +259,14 @@ class MultiScaleESMBackbone(nn.Module):
         self.output_dim = out_dim
 
     def forward(self, esm: torch.Tensor, task_ids: torch.Tensor) -> torch.Tensor:
-        x = torch.cat([self.prompts[task_ids], esm], dim=1)
-        x = x.permute(0, 2, 1)
+        # task_ids remains in the interface because the downstream classifier
+        # head is task-specific; the shared ESM2 encoder itself is task-agnostic.
+        del task_ids
+        x = esm.permute(0, 2, 1)
         x = self.drop(self.relu(self.bn1(torch.cat([conv(x) for conv in self.conv1], dim=1))))
         x = self.relu(self.bn2(torch.cat([conv(x) for conv in self.conv2], dim=1)))
         x = x.permute(0, 2, 1)
-        return x[:, self.cfg.prompt_len + self.cfg.window_size // 2, :]
+        return x[:, self.cfg.window_size // 2, :]
 
 
 class WindowGRUEncoder(nn.Module):
@@ -280,7 +295,7 @@ class CustomPTMModel(nn.Module):
     Standalone mt_esm_prott5_gated_structure model, without importing MTPrompt-PTM code:
 
     1. ESM branch:
-       ESM2 site window + learned task prompt -> two-layer multi-scale CNN -> [600].
+       ESM2 site window -> two-layer multi-scale CNN -> [600].
 
     2. ProtT5 branch:
        ProtT5 site window -> Linear + BiGRU + mean pooling -> [256].
@@ -299,7 +314,7 @@ class CustomPTMModel(nn.Module):
     def __init__(self, cfg: Config, n_tasks: int, variant: str):
         super().__init__()
         self.variant = variant
-        self.esm = MultiScaleESMBackbone(cfg, n_tasks)
+        self.esm = MultiScaleESMBackbone(cfg)
         self.base_dim = self.esm.output_dim
         self.prott5_encoder = None
         self.structure_encoder = None
@@ -328,9 +343,7 @@ class CustomPTMModel(nn.Module):
         structure: torch.Tensor | None = None,
     ) -> torch.Tensor:
         base = self.esm(esm, task_ids)
-        if self.variant == "mt_esm_prompt":
-            fused = base
-        elif self.variant == "mt_esm_prott5_concat":
+        if self.variant == "mt_esm_prott5_concat":
             prott5_repr = self.prott5_encoder(prott5)
             fused = torch.cat([base, prott5_repr], dim=1)
         else:
@@ -566,7 +579,6 @@ def main() -> None:
 
     cfg = Config(
         experiment_name=args.experiment_name,
-        prompt_len=args.prompt_len,
         epochs=args.epochs,
         patience=args.patience,
         batch_size=args.batch_size,

@@ -8,8 +8,6 @@ This directory contains the standalone script for the best custom model variant:
 ```text
 ESM branch:
   ESM2 site window [31, 1280]
-  + learned task prompt [500, 1280]
-  -> concat [531, 1280]
   -> MultiScaleCNN kernels [1, 9, 11], channels 200
   -> MultiScaleCNN kernels [1, 9, 11], channels 200
   -> center lysine representation [600]
@@ -69,5 +67,5 @@ Useful options are passed through to the Python script, for example:
 bash /data/ranran/my_ptm/多位点/experiment/mt_esm_prott5_custom/mt_esm_prott5_gated_structure/run_gated_structure.sh \
   --epochs 30 \
   --patience 6 \
-  --batch-size 8
+  --batch-size 16
 ```

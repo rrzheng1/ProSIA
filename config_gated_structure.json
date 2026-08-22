@@ -4,7 +4,6 @@
     "esm_branch": {
       "window_size": 31,
       "esm_dim": 1280,
-      "prompt_len": 500,
       "cnn_channels": 200,
       "kernel_sizes": [1, 9, 11],
       "output_dim": 600
@@ -32,7 +31,7 @@
   "training": {
     "epochs": 30,
     "patience": 6,
-    "batch_size": 8,
+    "batch_size": 16,
     "lr": 0.0001,
     "weight_decay": 0.0001,
     "dropout": 0.5,

@@ -1,23 +1,44 @@
-﻿# ProSIA
+# ProSIA
 
-项目：多模态 Lysine PTM（ESM2 + ProtT5 + Structure）训练与特征整理。
+ProSIA is a multimodal model for unified lysine PTM site prediction using
+ESM2, ProtT5, and structural representations with progressive gated fusion.
 
-快速开始：
-1. 创建并激活虚拟环境：
-   python -m venv .venv
-   .venv\Scripts\activate
+## Architecture
 
-2. 安装依赖：
-   pip install -r requirements.txt
+- ESM2 window: two multi-scale CNN blocks, producing a 600-dimensional site representation.
+- ProtT5 window: linear projection, BiGRU, and mean pooling.
+- Structure window: linear projection, BiGRU, and mean pooling.
+- Gate 1: feature-wise fusion of ESM2 and ProtT5.
+- Gate 2: feature-wise fusion of the PLM representation and structure.
+- Output: one task-specific classification head for each PTM type.
 
-3. 目录约定（将数据放到这些相对路径）：
-   - data/...
-   - plm_embeddings/esm2_embedding/*.pt
-   - plm_embeddings/prott5_embedding/*.pt
-   - structure/embedding/*.pt
+The ESM2 branch operates on the 31-residue site window through two
+multi-scale CNN blocks.
 
-4. 验证/整理 embeddings：
-   python extract_embeddings.py --root "E:/多位点/ProSIA" --proteins "E:/多位点/ProSIA/data/all_2811_proteins.csv"
+## Setup
 
-5. 运行训练脚本示例（快速 smoke test）：
-   python run_mt_esm_prott5_gated_structure.py --experiment-name myexp --device cpu --num-folds 1 --epochs 1
+```bash
+python -m venv .venv
+pip install -r requirements.txt
+```
+
+Expected project-local directories:
+
+```text
+data/
+esm2_embedding/
+prott5_embedding/
+structure_embedding/
+```
+
+## Training
+
+```bash
+python run_mt_esm_prott5_gated_structure.py \
+  --experiment-name mt_esm_prott5_global_split \
+  --batch-size 16 \
+  --device cuda
+```
+
+For architecture details and the gated-fusion equations, see
+[`README_STRUCTURE.md`](README_STRUCTURE.md).

@@ -16,7 +16,6 @@
     "lr": 0.0001,
     "num_folds": 5,
     "patience": 6,
-    "prompt_len": 500,
     "prott5_dim": 1024,
     "prott5_out": 256,
     "seed": 0,
@@ -44,7 +43,6 @@
     "beta-Hydroxybutyrylation"
   ],
   "variants": [
-    "mt_esm_prompt",
     "mt_esm_prott5_concat",
     "mt_esm_prott5_gated",
     "mt_esm_prott5_gated_structure"
